@@ -14,6 +14,8 @@ Setiap upload dicek MD5-nya: ✅ berarti file di Drive identik byte-per-byte den
 | `folders` | daftar subfolder |
 | `/save file:<file> folder:<autocomplete> nama:<opsional>` | slash command, nama folder di-autocomplete dari Drive |
 
+Di server, isi `ALLOWED_CHANNEL_IDS` (pisahkan koma) supaya bot hanya bekerja di kanal tertentu. DM selalu boleh. Agar bot juga tidak bisa *membaca* kanal lain, atur izin role bot di Discord (lihat README Ronova bagian "Batasi bot ke kanal tertentu").
+
 Nama file:
 - **Simpan** → `2026-11-13_14-05-22_namaasli.png` (waktu pesan dikirim).
 - **Rename** → nama yang kamu ketik, ekstensi ditambahkan otomatis. Kalau kirim beberapa file sekaligus: `nama_1.png`, `nama_2.mp4`, ...

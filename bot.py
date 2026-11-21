@@ -25,6 +25,8 @@ DISCORD_TOKEN = os.environ["DISCORD_TOKEN"]
 OWNER_ID = int(os.environ["OWNER_ID"])
 ROOT_FOLDER_ID = os.environ["DRIVE_ROOT_FOLDER_ID"]
 TZ = ZoneInfo(os.getenv("TIMEZONE", "Asia/Jakarta"))
+# Kanal server tempat bot boleh bekerja (pisahkan dengan koma). Kosong = semua kanal. DM selalu boleh.
+ALLOWED_CHANNEL_IDS = {int(x) for x in os.getenv("ALLOWED_CHANNEL_IDS", "").replace(" ", "").split(",") if x}
 
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 FOLDER_MIME = "application/vnd.google-apps.folder"
@@ -270,9 +272,17 @@ HELP = (
 )
 
 
+def channel_allowed(channel) -> bool:
+    """DM selalu boleh; di server hanya kanal di ALLOWED_CHANNEL_IDS (thread ikut kanal induknya)."""
+    if isinstance(channel, discord.DMChannel) or not ALLOWED_CHANNEL_IDS:
+        return True
+    channel_id = channel.parent_id if isinstance(channel, discord.Thread) else channel.id
+    return channel_id in ALLOWED_CHANNEL_IDS
+
+
 @client.event
 async def on_message(message: discord.Message):
-    if message.author.bot:
+    if message.author.bot or not channel_allowed(message.channel):
         return
     is_dm = isinstance(message.channel, discord.DMChannel)
     if message.author.id != OWNER_ID:
@@ -322,6 +332,10 @@ async def save_cmd(interaction: discord.Interaction, file: discord.Attachment, f
                    nama: str | None = None):
     if interaction.user.id != OWNER_ID:
         await interaction.response.send_message("Bot ini privat 🙏", ephemeral=True)
+        return
+    if not channel_allowed(interaction.channel):
+        allowed = " ".join(f"<#{cid}>" for cid in ALLOWED_CHANNEL_IDS)
+        await interaction.response.send_message(f"Pakai di {allowed} 🙏", ephemeral=True)
         return
     await interaction.response.defer(thinking=True)
     if folder:
